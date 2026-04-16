@@ -1,0 +1,20 @@
+A: B:4 C:2 D:7 E:9 H:14
+B: A:4 C:1 F:5 G:8 I:11
+C: A:2 B:1 D:3 F:6 J:10
+D: A:7 C:3 E:2 G:4 K:9
+E: A:9 D:2 H:3 L:8 M:12
+F: B:5 C:6 G:2 I:4 N:7
+G: B:8 D:4 F:2 H:5 J:3 O:9
+H: A:14 E:3 G:5 K:6 P:10
+I: B:11 F:4 J:2 N:3 Q:8
+J: C:10 G:3 I:2 K:4 O:5 R:9
+K: D:9 H:6 J:4 L:2 P:7 S:11
+L: E:8 K:2 M:3 R:6 T:10
+M: E:12 L:3 N:5 P:4 T:7
+N: F:7 I:3 M:5 O:2 Q:6
+O: G:9 J:5 N:2 P:3 R:4
+P: H:10 K:7 M:4 O:3 S:5
+Q: I:8 N:6 R:3 T:9
+R: J:9 L:6 O:4 Q:3 S:2
+S: K:11 P:5 R:2 T:4
+T: L:10 M:7 Q:9 S:4
