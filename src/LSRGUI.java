@@ -353,7 +353,7 @@ public class LSRGUI extends JFrame {
         if (fromNode.equals(toNode)) { return "0"; }
         OptionalInt cost = graph.getCost(fromNode, toNode);
         if (cost.isEmpty()) { return "-"; }
-        return fromNode + ">" + toNode + " (" + cost.getAsInt() + ")";
+        return fromNode + "→" + toNode + " (" + cost.getAsInt() + ")";
     }
 
     private String formatRoute(String sourceNode, String destinationNode, DijkstraResult result) {

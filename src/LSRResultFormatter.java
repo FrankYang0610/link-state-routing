@@ -60,7 +60,7 @@ public final class LSRResultFormatter {
         StringBuilder text = new StringBuilder();
         for (int i = 0; i < path.size(); i++) {
             if (i > 0) {
-                text.append(">");
+                text.append("→");
             }
             text.append(path.get(i));
         }
