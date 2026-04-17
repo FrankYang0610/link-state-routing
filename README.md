@@ -107,6 +107,6 @@ The code is split into small classes, with each class handling one main job:
 | `src/LSRResultFormatter.java` | Formats step output and summary results for CLI and GUI logs. |
 | `src/LSRTopologyService.java` | Handles topology operations used by the editor. |
 | `src/models/` | Data models for graphs, links, routes, Dijkstra steps, and Dijkstra results. |
-| `src/Argparser/` | Lightweight command-line argument parser. |
+| `src/argparser/` | Lightweight command-line argument parser. |
 | `test/` | JUnit tests for the main components. |
 

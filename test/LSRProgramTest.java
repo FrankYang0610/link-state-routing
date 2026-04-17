@@ -1,6 +1,6 @@
-import Argparser.Argparser;
-import Argparser.Command;
-import Argparser.Parameters;
+import argparser.Argparser;
+import argparser.Command;
+import argparser.Parameters;
 
 import models.DijkstraResult;
 import models.Graph;
