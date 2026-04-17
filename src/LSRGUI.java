@@ -36,6 +36,7 @@ public class LSRGUI extends JFrame {
     private final JTextField filePathField;
     private final JButton browseButton;
     private final JButton parseButton;
+    private final JButton editButton;
     private final JLabel sourceLabel;
     private final JComboBox<String> sourceComboBox;
     private final JRadioButton ssRadioButton;
@@ -60,6 +61,7 @@ public class LSRGUI extends JFrame {
         filePathField = new JTextField();
         browseButton = new JButton("Browse");
         parseButton = new JButton("Parse");
+        editButton = new JButton("Edit");
         sourceLabel = new JLabel("Source:");
         sourceComboBox = new JComboBox<String>();
         ssRadioButton = new JRadioButton("SS");
@@ -118,6 +120,7 @@ public class LSRGUI extends JFrame {
         JPanel fileButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         fileButtons.add(browseButton);
         fileButtons.add(parseButton);
+        fileButtons.add(editButton);
         fileRow.add(fileButtons, BorderLayout.EAST);
 
         JPanel calculationRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
@@ -168,6 +171,7 @@ public class LSRGUI extends JFrame {
     private void setupActions() {
         browseButton.addActionListener(event -> chooseFile());
         parseButton.addActionListener(event -> parseGraph());
+        editButton.addActionListener(event -> editFile());
         ssRadioButton.addActionListener(event -> updateModeControls());
         caRadioButton.addActionListener(event -> updateModeControls());
         startButton.addActionListener(event -> startCalculation());
@@ -204,6 +208,18 @@ public class LSRGUI extends JFrame {
             log(e.getMessage());
             showError(e.getMessage());
         }
+    }
+
+    private void editFile() {
+        String filePath = filePathField.getText().trim();
+        if (filePath.isEmpty()) {
+            showError("Please choose a .lsa file.");
+            return;
+        }
+        LSRFileEditor.open(filePath, savedPath -> {
+            filePathField.setText(savedPath.toAbsolutePath().toString());
+            log("File saved. Click Parse to reload the graph.");
+        });
     }
 
     private void startCalculation() {
