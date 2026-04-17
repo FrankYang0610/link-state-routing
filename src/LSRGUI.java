@@ -35,11 +35,12 @@ import java.util.List;
 import java.util.OptionalInt;
 
 public class LSRGUI extends JFrame {
+    private static final String ALL_NODES_OPTION = "All Nodes";
+
     private final JTextField filePathField;
     private final JButton browseButton;
     private final JButton parseButton;
     private final JButton editButton;
-    private final JLabel sourceLabel;
     private final JComboBox<String> sourceComboBox;
     private final JRadioButton ssRadioButton;
     private final JRadioButton caRadioButton;
@@ -64,7 +65,6 @@ public class LSRGUI extends JFrame {
         browseButton = new JButton("Browse");
         parseButton = new JButton("Parse");
         editButton = new JButton("Edit");
-        sourceLabel = new JLabel("Source:");
         sourceComboBox = new JComboBox<String>();
         ssRadioButton = new JRadioButton("SS");
         caRadioButton = new JRadioButton("CA", true);
@@ -133,7 +133,7 @@ public class LSRGUI extends JFrame {
         calculationRow.add(new JLabel("Mode:"));
         calculationRow.add(ssRadioButton);
         calculationRow.add(caRadioButton);
-        calculationRow.add(sourceLabel);
+        calculationRow.add(new JLabel("Source:"));
         calculationRow.add(sourceComboBox);
         calculationRow.add(startButton);
         calculationRow.add(nextButton);
@@ -179,8 +179,8 @@ public class LSRGUI extends JFrame {
         browseButton.addActionListener(event -> chooseFile());
         parseButton.addActionListener(event -> parseGraph());
         editButton.addActionListener(event -> editFile());
-        ssRadioButton.addActionListener(event -> updateModeControls());
-        caRadioButton.addActionListener(event -> updateModeControls());
+        ssRadioButton.addActionListener(event -> modeChanged());
+        caRadioButton.addActionListener(event -> modeChanged());
         startButton.addActionListener(event -> startCalculation());
         nextButton.addActionListener(event -> nextStep());
         stopButton.addActionListener(event -> initial());
@@ -208,7 +208,7 @@ public class LSRGUI extends JFrame {
         try {
             graph = LSRFileParser.parse(filePath);
             nodes = new ArrayList<String>(graph.getNodes());
-            loadSourceNodes();
+            updateSourceOptions();
             initial();
             showValidationResult();
         } catch (Exception e) {
@@ -271,12 +271,17 @@ public class LSRGUI extends JFrame {
         }
 
         String sourceNode = String.valueOf(selectedSource);
+        if (sourceNode.equals(ALL_NODES_OPTION)) {
+            showError("Please choose a source node.");
+            return;
+        }
         singleStepResult = LSRDijkstraCalculator.compute(graph, sourceNode);
         shownStepCount = 0;
 
         log("Single-step mode started.");
         log("Source: " + sourceNode);
-        renderInitialTable();
+        logSingleSourceDisplayNotice();
+        renderInitialTable(sourceNode);
         setTableTitle("Single-Step Progress");
         showSingleStepButtons();
         nextStep();
@@ -308,7 +313,14 @@ public class LSRGUI extends JFrame {
 
     private void computeAll() {
         log("Compute-all mode started.");
-        renderComputeAllTable();
+        Object selectedSource = sourceComboBox.getSelectedItem();
+        if (selectedSource != null && !String.valueOf(selectedSource).equals(ALL_NODES_OPTION)) {
+            log("Source: " + selectedSource);
+            logSingleSourceDisplayNotice();
+            renderComputeAllTable(String.valueOf(selectedSource));
+        } else {
+            renderComputeAllTable();
+        }
         log("Compute-all mode completed.");
         showFinishedButtons();
     }
@@ -317,6 +329,13 @@ public class LSRGUI extends JFrame {
         log("");
         log(LSRResultFormatter.formatSummary(singleStepResult).trim());
         showFinishedButtons();
+    }
+
+    private void logSingleSourceDisplayNotice() {
+        String message = "For easier reading, single-source results are shown vertically: "
+                + "destinations are listed by row and the selected source is shown as the column.";
+        log(message);
+        JOptionPane.showMessageDialog(this, message, "Display Order Changed", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void renderEmptyTable() {
@@ -330,11 +349,16 @@ public class LSRGUI extends JFrame {
         setColumnWidths();
     }
 
+    private void renderInitialTable(String sourceNode) {
+        setTableTitle("Initial Topology");
+        tableModel.setDataVector(createInitialRows(sourceNode), createSingleSourceTableHeader(sourceNode));
+        setColumnWidths();
+    }
+
     private void showSingleStepResult(DijkstraStep step) {
-        int sourceRow = nodes.indexOf(singleStepResult.getSourceNode());
-        int destinationColumn = nodes.indexOf(step.getFoundNode());
-        if (sourceRow >= 0 && destinationColumn >= 0) {
-            tableModel.setValueAt(formatPath(step.getPath(), step.getCost()), sourceRow, destinationColumn + 1);
+        int destinationRow = nodes.indexOf(step.getFoundNode());
+        if (destinationRow >= 0 && tableModel.getColumnCount() > 1) {
+            tableModel.setValueAt(formatPath(step.getPath(), step.getCost()), destinationRow, 1);
         }
     }
 
@@ -357,19 +381,41 @@ public class LSRGUI extends JFrame {
         setColumnWidths();
     }
 
+    private void renderComputeAllTable(String sourceNode) {
+        setTableTitle("Shortest Path Table");
+        Object[][] rows = new Object[nodes.size()][2];
+        DijkstraResult result = LSRDijkstraCalculator.compute(graph, sourceNode);
+
+        for (int row = 0; row < nodes.size(); row++) {
+            String destinationNode = nodes.get(row);
+            rows[row][0] = destinationNode;
+            rows[row][1] = formatRoute(sourceNode, destinationNode, result);
+        }
+
+        tableModel.setDataVector(rows, createSingleSourceTableHeader(sourceNode));
+        setColumnWidths();
+    }
+
     private Object[][] createInitialRows() {
         Object[][] rows = new Object[nodes.size()][nodes.size() + 1];
-
         for (int row = 0; row < nodes.size(); row++) {
             String fromNode = nodes.get(row);
             rows[row][0] = fromNode;
-
             for (int column = 0; column < nodes.size(); column++) {
                 String toNode = nodes.get(column);
                 rows[row][column + 1] = formatEdge(fromNode, toNode);
             }
         }
+        return rows;
+    }
 
+    private Object[][] createInitialRows(String sourceNode) {
+        Object[][] rows = new Object[nodes.size()][2];
+        for (int row = 0; row < nodes.size(); row++) {
+            String toNode = nodes.get(row);
+            rows[row][0] = toNode;
+            rows[row][1] = formatEdge(sourceNode, toNode);
+        }
         return rows;
     }
 
@@ -400,10 +446,30 @@ public class LSRGUI extends JFrame {
         return header;
     }
 
-    private void loadSourceNodes() {
+    private Object[] createSingleSourceTableHeader(String sourceNode) {
+        return new Object[] {"To \\ From", sourceNode};
+    }
+
+    private void updateSourceOptions() {
+        Object previousSelection = sourceComboBox.getSelectedItem();
         sourceComboBox.removeAllItems();
+        if (graph == null) {
+            return;
+        }
+
+        if (caRadioButton.isSelected()) {
+            sourceComboBox.addItem(ALL_NODES_OPTION);
+        }
         for (String node : nodes) {
             sourceComboBox.addItem(node);
+        }
+
+        if (previousSelection != null && isSelectableSource(String.valueOf(previousSelection))) {
+            sourceComboBox.setSelectedItem(previousSelection);
+        } else if (caRadioButton.isSelected()) {
+            sourceComboBox.setSelectedItem(ALL_NODES_OPTION);
+        } else if (sourceComboBox.getItemCount() > 0) {
+            sourceComboBox.setSelectedIndex(0);
         }
     }
 
@@ -413,7 +479,7 @@ public class LSRGUI extends JFrame {
         if (errors.isEmpty()) {
             log("Graph parsed successfully.");
             log("Nodes: " + graph.size());
-            log("Choose SS or CA, then click Start Calculation.");
+            log("Choose a mode and source, then click Start Calculation.");
         } else {
             log("Graph is invalid:");
             for (String error : errors) {
@@ -442,7 +508,7 @@ public class LSRGUI extends JFrame {
         ssRadioButton.setEnabled(true);
         caRadioButton.setEnabled(true);
         updateFileButtons();
-        updateModeControls();
+        updateSourceControl();
     }
 
     private void showSingleStepButtons() {
@@ -473,16 +539,17 @@ public class LSRGUI extends JFrame {
         updateFileButtons();
     }
 
-    private void updateModeControls() {
-        boolean hasGraph = graph != null && sourceComboBox.getItemCount() > 0;
-        boolean singleStepMode = ssRadioButton.isSelected();
+    private void updateSourceControl() {
+        sourceComboBox.setEnabled(graph != null && sourceComboBox.getItemCount() > 0 && ssRadioButton.isEnabled());
+    }
 
-        sourceLabel.setVisible(singleStepMode);
-        sourceComboBox.setVisible(singleStepMode);
-        sourceComboBox.setEnabled(singleStepMode && hasGraph && ssRadioButton.isEnabled());
+    private void modeChanged() {
+        updateSourceOptions();
+        updateSourceControl();
+    }
 
-        revalidate();
-        repaint();
+    private boolean isSelectableSource(String source) {
+        return (caRadioButton.isSelected() && source.equals(ALL_NODES_OPTION)) || nodes.contains(source);
     }
 
     private void updateFileButtons() {
@@ -496,7 +563,11 @@ public class LSRGUI extends JFrame {
 
     private void setColumnWidths() {
         for (int i = 0; i < table.getColumnModel().getColumnCount(); i++) {
-            table.getColumnModel().getColumn(i).setPreferredWidth(i == 0 ? 80 : 140);
+            int width = i == 0 ? 80 : 140;
+            if (table.getColumnModel().getColumnCount() == 2 && i == 1) {
+                width = 260;
+            }
+            table.getColumnModel().getColumn(i).setPreferredWidth(width);
         }
     }
 
