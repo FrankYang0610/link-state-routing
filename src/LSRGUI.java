@@ -21,6 +21,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import java.awt.BorderLayout;
@@ -169,6 +171,11 @@ public class LSRGUI extends JFrame {
     }
 
     private void setupActions() {
+        filePathField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent event) { updateFileButtons(); }
+            public void removeUpdate(DocumentEvent event) { updateFileButtons(); }
+            public void changedUpdate(DocumentEvent event) { updateFileButtons(); }
+        });
         browseButton.addActionListener(event -> chooseFile());
         parseButton.addActionListener(event -> parseGraph());
         editButton.addActionListener(event -> editFile());
@@ -178,6 +185,7 @@ public class LSRGUI extends JFrame {
         nextButton.addActionListener(event -> nextStep());
         stopButton.addActionListener(event -> initial());
         resetButton.addActionListener(event -> initial());
+        updateFileButtons();
     }
 
     private void chooseFile() {
@@ -216,7 +224,7 @@ public class LSRGUI extends JFrame {
             showError("Please choose a .lsa file.");
             return;
         }
-        LSRFileEditor.open(filePath, savedPath -> {
+        LSREditorGUI.open(filePath, savedPath -> {
             filePathField.setText(savedPath.toAbsolutePath().toString());
             log("File saved. Click Parse to reload the graph.");
         });
@@ -433,6 +441,7 @@ public class LSRGUI extends JFrame {
 
         ssRadioButton.setEnabled(true);
         caRadioButton.setEnabled(true);
+        updateFileButtons();
         updateModeControls();
     }
 
@@ -448,6 +457,7 @@ public class LSRGUI extends JFrame {
         ssRadioButton.setEnabled(false);
         caRadioButton.setEnabled(false);
         sourceComboBox.setEnabled(false);
+        updateFileButtons();
     }
 
     private void showFinishedButtons() {
@@ -460,6 +470,7 @@ public class LSRGUI extends JFrame {
         ssRadioButton.setEnabled(false);
         caRadioButton.setEnabled(false);
         sourceComboBox.setEnabled(false);
+        updateFileButtons();
     }
 
     private void updateModeControls() {
@@ -472,6 +483,15 @@ public class LSRGUI extends JFrame {
 
         revalidate();
         repaint();
+    }
+
+    private void updateFileButtons() {
+        boolean hasExistingFile = new File(filePathField.getText().trim()).isFile();
+        boolean singleStepRunning = singleStepResult != null && shownStepCount < singleStepResult.getSteps().size();
+
+        browseButton.setEnabled(!singleStepRunning);
+        parseButton.setEnabled(hasExistingFile && !singleStepRunning);
+        editButton.setEnabled(hasExistingFile && !singleStepRunning);
     }
 
     private void setColumnWidths() {

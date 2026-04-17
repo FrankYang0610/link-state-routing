@@ -45,6 +45,19 @@ class LSRProgramTest {
     }
 
     @Test
+    void fileParserReadsValidLsaText() {
+        Graph graph = LSRFileParser.parseText(String.join(System.lineSeparator(),
+                "A: B:5 C:3",
+                "B: A:5 C:4",
+                "C: A:3 B:4"
+        ));
+
+        assertEquals(3, graph.size());
+        assertEquals(5, graph.getCost("A", "B").orElseThrow());
+        assertEquals(3, graph.getCost("A", "C").orElseThrow());
+    }
+
+    @Test
     void fileParserRejectsBadInput() {
         assertThrows(IOException.class, () -> LSRFileParser.parse(Path.of("missing-file.lsa")));
         assertThrows(IllegalArgumentException.class, () -> LSRFileParser.parse(writeTempLsa("A B:5")));
@@ -52,6 +65,7 @@ class LSRProgramTest {
         assertThrows(IllegalArgumentException.class, () -> LSRFileParser.parse(writeTempLsa("A: B:-1")));
         assertThrows(IllegalArgumentException.class, () -> LSRFileParser.parse(writeTempLsa("A: B:1 B:2")));
         assertThrows(IllegalArgumentException.class, () -> LSRFileParser.parse(writeTempLsa("A: A:1")));
+        assertThrows(IllegalArgumentException.class, () -> LSRFileParser.parseText("A B:5"));
     }
 
     @Test
@@ -98,6 +112,24 @@ class LSRProgramTest {
         assertTrue(firstStep.contains("Found B: Path: " + pathToB));
         assertTrue(summary.contains("B: Path: " + pathToB + " Cost: 2"));
         assertTrue(summary.contains("C: Unreachable"));
+    }
+
+    @Test
+    void fileWriterSavesGraphAsParseableLsaFile() throws Exception {
+        Graph graph = new Graph();
+        graph.addEdge("A", "B", 5);
+        graph.addNode("C");
+
+        Path file = Files.createTempFile("lsr-write-test-", ".lsa");
+        file.toFile().deleteOnExit();
+
+        LSRFileWriter.write(graph, file);
+        Graph parsedGraph = LSRFileParser.parse(file);
+
+        assertEquals(3, parsedGraph.size());
+        assertEquals(5, parsedGraph.getCost("A", "B").orElseThrow());
+        assertEquals(5, parsedGraph.getCost("B", "A").orElseThrow());
+        assertTrue(parsedGraph.containsNode("C"));
     }
 
     @Test

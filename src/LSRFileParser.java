@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 public final class LSRFileParser {
@@ -21,11 +23,22 @@ public final class LSRFileParser {
             throw new IOException(".lsa file does not exist: " + filePath);
         }
 
+        return parseLines(Files.readAllLines(filePath));
+    }
+
+    public static Graph parseText(String content) {
+        if (content == null) {
+            throw new IllegalArgumentException("LSA content is null.");
+        }
+        return parseLines(Arrays.asList(content.split("\\R", -1)));
+    }
+
+    private static Graph parseLines(List<String> lines) {
         Graph graph = new Graph();
         Set<String> sourceNodes = new LinkedHashSet<String>();
         int lineNumber = 0;
 
-        for (String rawLine : Files.readAllLines(filePath)) {
+        for (String rawLine : lines) {
             lineNumber++;
             String line = rawLine.trim();
 
