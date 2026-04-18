@@ -1,7 +1,7 @@
 import models.DijkstraResult;
 import models.DijkstraStep;
 import models.Graph;
-import models.RouteResult;
+import models.DijkstraRouteResult;
 
 import org.junit.jupiter.api.Test;
 
@@ -53,7 +53,7 @@ class DijkstraAndRouteTest {
         DijkstraResult result = LSRDijkstraCalculator.compute(graph, "A");
 
         assertRoute(result, "B", 2, "A", "B");
-        RouteResult routeToC = result.getRoutes().get("C");
+        DijkstraRouteResult routeToC = result.getRoutes().get("C");
         assertFalse(routeToC.isReachable());
         assertTrue(routeToC.getPath().isEmpty());
         assertEquals(Integer.MAX_VALUE, routeToC.getCost());
@@ -71,8 +71,8 @@ class DijkstraAndRouteTest {
 
     @Test
     void routeResultReachabilityDependsOnPath() {
-        RouteResult reachable = new RouteResult("B", List.of("A", "B"), 4);
-        RouteResult unreachable = new RouteResult("C", List.of(), Integer.MAX_VALUE);
+        DijkstraRouteResult reachable = new DijkstraRouteResult("B", List.of("A", "B"), 4);
+        DijkstraRouteResult unreachable = new DijkstraRouteResult("C", List.of(), Integer.MAX_VALUE);
 
         assertTrue(reachable.isReachable());
         assertFalse(unreachable.isReachable());
@@ -81,14 +81,14 @@ class DijkstraAndRouteTest {
     @Test
     void resultObjectsCopyAndProtectTheirCollections() {
         List<String> path = new ArrayList<>(List.of("A", "B"));
-        RouteResult route = new RouteResult("B", path, 4);
+        DijkstraRouteResult route = new DijkstraRouteResult("B", path, 4);
         path.add("C");
 
         assertEquals(List.of("A", "B"), route.getPath());
         assertThrows(UnsupportedOperationException.class, () -> route.getPath().add("C"));
 
         List<DijkstraStep> steps = new ArrayList<>(List.of(new DijkstraStep("B", List.of("A", "B"), 4)));
-        Map<String, RouteResult> routes = new LinkedHashMap<>();
+        Map<String, DijkstraRouteResult> routes = new LinkedHashMap<>();
         routes.put("B", route);
 
         DijkstraResult result = new DijkstraResult("A", routes, steps);
@@ -117,7 +117,7 @@ class DijkstraAndRouteTest {
     }
 
     private static void assertRoute(DijkstraResult result, String destination, int cost, String... path) {
-        RouteResult route = result.getRoutes().get(destination);
+        DijkstraRouteResult route = result.getRoutes().get(destination);
 
         assertEquals(cost, route.getCost());
         assertEquals(List.of(path), route.getPath());

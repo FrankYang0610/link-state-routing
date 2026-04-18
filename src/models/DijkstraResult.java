@@ -7,12 +7,12 @@ import java.util.Map;
 
 public class DijkstraResult {
     private final String sourceNode;
-    private final Map<String, RouteResult> routes;
+    private final Map<String, DijkstraRouteResult> routes;
     private final List<DijkstraStep> steps;
 
-    public DijkstraResult(String sourceNode, Map<String, RouteResult> routes, List<DijkstraStep> steps) {
+    public DijkstraResult(String sourceNode, Map<String, DijkstraRouteResult> routes, List<DijkstraStep> steps) {
         this.sourceNode = sourceNode;
-        this.routes = Collections.unmodifiableMap(new LinkedHashMap<String, RouteResult>(routes));
+        this.routes = Collections.unmodifiableMap(new LinkedHashMap<String, DijkstraRouteResult>(routes));
         this.steps = List.copyOf(steps);
     }
 
@@ -20,7 +20,7 @@ public class DijkstraResult {
         return sourceNode;
     }
 
-    public Map<String, RouteResult> getRoutes() {
+    public Map<String, DijkstraRouteResult> getRoutes() {
         return routes;
     }
 

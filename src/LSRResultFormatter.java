@@ -1,6 +1,6 @@
 import models.DijkstraResult;
 import models.DijkstraStep;
-import models.RouteResult;
+import models.DijkstraRouteResult;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -41,7 +41,7 @@ public final class LSRResultFormatter {
     public static String formatSummary(DijkstraResult result) {
         StringBuilder text = new StringBuilder();
         text.append("Source ").append(result.getSourceNode()).append(":\n");
-        for (RouteResult route : result.getRoutes().values()) {
+        for (DijkstraRouteResult route : result.getRoutes().values()) {
             if (route.isReachable()) {
                 text.append(route.getDestinationNode())
                         .append(": Path: ")

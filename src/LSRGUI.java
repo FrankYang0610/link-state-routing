@@ -1,7 +1,7 @@
 import models.DijkstraResult;
 import models.DijkstraStep;
 import models.Graph;
-import models.RouteResult;
+import models.DijkstraRouteResult;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -428,7 +428,7 @@ public class LSRGUI extends JFrame {
 
     private String formatRoute(String sourceNode, String destinationNode, DijkstraResult result) {
         if (sourceNode.equals(destinationNode)) { return "0"; }
-        RouteResult route = result.getRoutes().get(destinationNode);
+        DijkstraRouteResult route = result.getRoutes().get(destinationNode);
         if (route == null || !route.isReachable()) { return "-"; }
         return formatPath(route.getPath(), route.getCost());
     }

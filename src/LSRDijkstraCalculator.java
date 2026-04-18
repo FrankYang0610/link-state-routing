@@ -2,7 +2,7 @@ import models.DijkstraResult;
 import models.DijkstraStep;
 import models.Graph;
 import models.GraphLink;
-import models.RouteResult;
+import models.DijkstraRouteResult;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -102,13 +102,13 @@ public final class LSRDijkstraCalculator {
         return new DijkstraResult(sourceNode, buildRoutes(graph, sourceNode, distances, previousNodes), steps);
     }
 
-    private static Map<String, RouteResult> buildRoutes(
+    private static Map<String, DijkstraRouteResult> buildRoutes(
             Graph graph,
             String sourceNode,
             Map<String, Integer> distances,
             Map<String, String> previousNodes
     ) {
-        Map<String, RouteResult> routes = new LinkedHashMap<String, RouteResult>();
+        Map<String, DijkstraRouteResult> routes = new LinkedHashMap<String, DijkstraRouteResult>();
 
         for (String node : graph.getNodes()) {
             if (node.equals(sourceNode)) {
@@ -120,7 +120,7 @@ public final class LSRDijkstraCalculator {
                     ? Collections.<String>emptyList()
                     : buildPath(sourceNode, node, previousNodes);
 
-            routes.put(node, new RouteResult(node, path, cost));
+            routes.put(node, new DijkstraRouteResult(node, path, cost));
         }
 
         return routes;
