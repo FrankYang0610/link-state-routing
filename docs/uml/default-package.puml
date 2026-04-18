@@ -1,0 +1,105 @@
+@startuml
+title Default Package - Class Diagram
+
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+package "default package" {
+    class LSRCompute {
+        +main(args: String[]): void
+    }
+
+    class "LSRCompute.Options" as LSRComputeOptions {
+        -fileName: String
+        -sourceNode: String
+        -mode: String
+    }
+
+    class LSRGUI {
+        -graph: Graph
+        -nodes: List<String>
+        -singleStepResult: DijkstraResult
+        -shownStepCount: int
+        +open(): void
+    }
+
+    class LSREditorGUI {
+        -filePath: Path
+        -parsedGraph: Graph
+        -nodes: List<String>
+        -dirty: boolean
+        -lastParseValid: boolean
+        +open(fileName: String, saveCallback: Consumer<Path>): void
+    }
+
+    class LSRFileParser {
+        +parse(fileName: String): Graph
+        +parse(filePath: Path): Graph
+        +parseText(content: String): Graph
+    }
+
+    class LSRFileWriter {
+        +write(graph: Graph, filePath: Path): void
+        +toLines(graph: Graph): List<String>
+    }
+
+    class LSRGraphValidator {
+        +isValid(graph: Graph): boolean
+        +validate(graph: Graph): void
+        +findErrors(graph: Graph): List<String>
+    }
+
+    class LSRDijkstraCalculator {
+        +compute(graph: Graph, sourceNode: String): DijkstraResult
+    }
+
+    class "LSRDijkstraCalculator.RouteState" as RouteState {
+        -node: String
+        -cost: int
+        -getNode(): String
+        -getCost(): int
+    }
+
+    class LSRResultFormatter {
+        +printSingleStepResult(result: DijkstraResult): void
+        +printSummary(result: DijkstraResult): void
+        +formatStep(step: DijkstraStep): String
+        +formatSingleStepResult(result: DijkstraResult): String
+        +formatSummary(result: DijkstraResult): String
+        +formatPath(path: List<String>): String
+    }
+
+    class LSRTopologyService {
+        +addNode(graph: Graph, node: String): Graph
+        +removeNode(graph: Graph, node: String): Graph
+        +addOrUpdateLink(graph: Graph, fromNode: String, toNode: String, cost: int): Graph
+        +breakLink(graph: Graph, fromNode: String, toNode: String): Graph
+        +copyGraph(graph: Graph): Graph
+    }
+
+    LSRCompute *-- LSRComputeOptions
+    LSRDijkstraCalculator *-- RouteState
+
+    LSRCompute ..> LSRGUI
+    LSRCompute ..> LSRFileParser
+    LSRCompute ..> LSRGraphValidator
+    LSRCompute ..> LSRDijkstraCalculator
+    LSRCompute ..> LSRResultFormatter
+
+    LSRGUI ..> LSRFileParser
+    LSRGUI ..> LSRGraphValidator
+    LSRGUI ..> LSRDijkstraCalculator
+    LSRGUI ..> LSRResultFormatter
+    LSRGUI ..> LSREditorGUI
+
+    LSREditorGUI ..> LSRFileParser
+    LSREditorGUI ..> LSRFileWriter
+    LSREditorGUI ..> LSRGraphValidator
+    LSREditorGUI ..> LSRTopologyService
+
+    LSRTopologyService ..> LSRGraphValidator
+
+    LSRDijkstraCalculator ..> RouteState
+}
+
+@enduml

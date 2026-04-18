@@ -1,0 +1,65 @@
+@startuml
+title models Package - Class Diagram
+
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+package models {
+    class Graph {
+        -adjacencyList: Map<String, List<GraphLink>>
+        +addNode(node: String): void
+        +addEdge(fromNode: String, toNode: String, cost: int): void
+        +addDirectedEdge(fromNode: String, toNode: String, cost: int): void
+        +removeNode(node: String): void
+        +removeEdge(fromNode: String, toNode: String): void
+        +removeDirectedEdge(fromNode: String, toNode: String): void
+        +getNodes(): Set<String>
+        +getNeighbors(node: String): List<GraphLink>
+        +getCost(fromNode: String, toNode: String): OptionalInt
+        +containsNode(node: String): boolean
+        +containsEdge(fromNode: String, toNode: String): boolean
+        +size(): int
+        +getAdjacencyList(): Map<String, List<GraphLink>>
+    }
+
+    class GraphLink {
+        -toNode: String
+        -cost: int
+        +getToNode(): String
+        +getCost(): int
+    }
+
+    class DijkstraResult {
+        -sourceNode: String
+        -routes: Map<String, RouteResult>
+        -steps: List<DijkstraStep>
+        +getSourceNode(): String
+        +getRoutes(): Map<String, RouteResult>
+        +getSteps(): List<DijkstraStep>
+    }
+
+    class DijkstraStep {
+        -foundNode: String
+        -path: List<String>
+        -cost: int
+        +getFoundNode(): String
+        +getPath(): List<String>
+        +getCost(): int
+    }
+
+    class RouteResult {
+        -destinationNode: String
+        -path: List<String>
+        -cost: int
+        +getDestinationNode(): String
+        +getPath(): List<String>
+        +getCost(): int
+        +isReachable(): boolean
+    }
+
+    Graph "1" *-- "0..*" GraphLink : adjacency list
+    DijkstraResult "1" *-- "0..*" RouteResult : routes
+    DijkstraResult "1" *-- "0..*" DijkstraStep : steps
+}
+
+@enduml

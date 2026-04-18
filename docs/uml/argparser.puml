@@ -1,0 +1,31 @@
+@startuml
+title argparser Package - Class Diagram
+
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+package argparser {
+    class Argparser {
+        +parse(args: String[], optionsClass: Class<T>): T
+        +usage(optionsClass: Class<?>): String
+    }
+
+    annotation Command {
+        +name(): String
+        +description(): String
+    }
+
+    annotation Parameters {
+        +index(): int
+        +name(): String
+        +description(): String
+        +required(): boolean
+        +defaultValue(): String
+        +choices(): String[]
+    }
+
+    Argparser ..> Command
+    Argparser ..> Parameters
+}
+
+@enduml
